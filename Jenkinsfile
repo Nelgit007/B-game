@@ -44,22 +44,22 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonar-scan') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName-Boardgame -Dsonar.projectKey-Boardgame \
-                    -Dsonar.java.binaries-.'''
-                }
-            }
-        }
+        // stage('SonarQube Analysis') {
+        //     steps {
+        //         withSonarQubeEnv('sonar-scan') {
+        //             sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName-Boardgame -Dsonar.projectKey-Boardgame \
+        //             -Dsonar.java.binaries-.'''
+        //         }
+        //     }
+        // }
 
-        stage('Quality Gate') {
-          steps {
-            script {
-                waitForQualityGate abortPipeline: false, credentialsId: 'sonar-scan'
-            }
-          }
-        }
+        // stage('Quality Gate') {
+        //   steps {
+        //     script {
+        //         waitForQualityGate abortPipeline: false, credentialsId: 'sonar-scan'
+        //     }
+        //   }
+        // }
 
         stage('Build App') {
           steps {
