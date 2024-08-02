@@ -2,8 +2,10 @@ pipeline {
     agent any
 
     environment {
-        registry = "nelsonosagie/nelapp"
-        registryCredential = 'docker-cred'
+        DOCKERHUB_CREDENTIALS = credentials('docker-cred')
+        DOCKER_USERNAME = "nelsonosagie"
+        JOB = "bgame"
+        SCANNER_HOME = tool 'sonar-scan'
     }
 
     tools {
@@ -24,22 +26,81 @@ pipeline {
             }
         }
 
-        // stage('Compile') {
-        //     steps {
-        //         sh 'mvn compile'
-        //     }
-        // }
+        stage('Compile') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
         
-        // stage('Test') {
-        //     steps {
-        //         sh 'mvn test'
-        //     }
-        // }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
         
-        // stage('Build') {
-        //     steps {
-        //         sh 'mvn package'
-        //     }
-        // }
+        stage('File System Scan') {
+            steps {
+                sh 'trivy fs --format table -o trivy-fs-report.html .'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar-scan') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName-Boardgame -Dsonar.projectKey-Boardgame \
+                    -Dsonar.java.binaries-.'''
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+          steps {
+            script {
+                waitForQualityGate abortPipeline: false, credentialsId: 'sonar-scan'
+            }
+          }
+        }
+
+        stage('Build App') {
+          steps {
+            script {
+                sh 'mvn package'
+            }
+          }
+        }
+
+        stage('Build & Tag Docker Image') {
+          steps {
+            script {
+                withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                    sh "docker build -t ${JOB}:V${BUILD_NUMBER} ."
+                }
+            }
+          }
+        }
+
+        stage('Docker Image Scan') {
+            steps {
+                sh 'trivy image --format table -o trivy-fs-report.html '
+            }
+        }
+
+        stage('Upload Image'){
+          steps{
+            script {
+              docker.withRegistry('', registryCredential) {
+                dockerImage.push("${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}")
+                dockerImage.push("${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:latest")
+              }
+            }
+          }
+        }
+
+        stage('Remove Unused docker image') {
+          steps{
+            sh "docker rmi ${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}"
+            sh "docker rmi ${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:latest"
+          }
+        }
     }
 }
