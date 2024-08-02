@@ -5,7 +5,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('docker-cred')
         DOCKER_USERNAME = "nelsonosagie"
         JOB = "bgame"
-        SCANNER_HOME = tool 'sonar-scan'
+        SCANNER_HOME = tool 'mysonarscanner4'
     }
 
     tools {
