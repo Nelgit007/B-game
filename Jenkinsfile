@@ -90,8 +90,8 @@ pipeline {
           steps{
             script {
               docker.withRegistry('', registryCredential) {
-                dockerImage.push("${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}")
-                dockerImage.push("${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:latest")
+                dockerImage.push("${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}")
+                dockerImage.push("${DOCKER_USERNAME}/${JOB}:latest")
               }
             }
           }
