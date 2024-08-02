@@ -81,7 +81,7 @@ pipeline {
 
         stage('Docker Image Scan') {
             steps {
-                sh 'trivy image --format table -o trivy-fs-report.html '
+                sh "trivy image --format table -o trivy-fs-report.html ${JOB}:V${BUILD_NUMBER}"
             }
         }
 
