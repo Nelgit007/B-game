@@ -70,12 +70,14 @@ pipeline {
           }
         }
 
-        stage('Build & Tag Docker Image') {
+        stage('Docker Image Build') {
           steps {
             script {
-                withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                    sh "docker build -t ${JOB}:V${BUILD_NUMBER} ."
-                }
+                sh "docker build -t ${JOB}:V${BUILD_NUMBER} ."
+                
+                // withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                //     sh "docker build -t ${JOB}:V${BUILD_NUMBER} ."
+                // }
             }
           }
         }
@@ -86,22 +88,44 @@ pipeline {
         //     }
         // }
 
-        stage('Upload Image'){
+        stage('Docker Image Tag'){
           steps{
             script {
-              docker.withRegistry('', registryCredential) {
-                dockerImage.push("${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}")
-                dockerImage.push("${DOCKER_USERNAME}/${JOB}:latest")
-              }
+                def COMMIT_ID = env.GIT_COMMIT.take(7)
+                sh "docker tag ${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}"
+                sh "docker tag ${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:${COMMIT_ID}"
+
+                
+            //   docker.withRegistry('', registryCredential) {
+            //     dockerImage.push("${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}")
+            //     dockerImage.push("${DOCKER_USERNAME}/${JOB}:latest")
+            //   }
             }
           }
         }
 
-        stage('Remove Unused docker image') {
-          steps{
-            sh "docker rmi ${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}"
-            sh "docker rmi ${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:latest"
-          }
+        stage('Dockerhub login') {
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                echo 'Login Successful'
+            }
+        }
+
+        stage('Docker Image Push') {
+            steps {
+                script {
+                    def COMMIT_ID = env.GIT_COMMIT.take(7)
+                    //sh "docker push ${DOCKER_USERNAME}/${JOB}:v${BUILD_NUMBER}"
+                    sh "docker push ${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}"
+                    sh "docker push ${DOCKER_USERNAME}/${JOB}:${COMMIT_ID}"
+                }
+            }
+        }
+
+        stage('Docker Image clean up') {
+            steps {
+                sh(script: 'docker image prune -af')
+            }
         }
     }
 }
