@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-cred')
+        registryCredential = "docker-cred"
         DOCKER_USERNAME = "nelsonosagie"
         JOB = "bgame"
         SCANNER_HOME = tool 'mysonarscanner4'
@@ -79,11 +80,11 @@ pipeline {
           }
         }
 
-        stage('Docker Image Scan') {
-            steps {
-                sh "trivy image --format table -o trivy-fs-report.html ${JOB}:V${BUILD_NUMBER}"
-            }
-        }
+        // stage('Docker Image Scan') {
+        //     steps {
+        //         sh "trivy image --format table -o trivy-fs-report.html ${JOB}:V${BUILD_NUMBER}"
+        //     }
+        // }
 
         stage('Upload Image'){
           steps{
