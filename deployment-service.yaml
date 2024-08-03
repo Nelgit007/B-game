@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: bgame
-          image: nelsonosagie/bgame:V1
+          image: nelsonosagie/bgame:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
