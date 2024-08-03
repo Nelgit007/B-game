@@ -94,6 +94,7 @@ pipeline {
                 def COMMIT_ID = env.GIT_COMMIT.take(7)
                 sh "docker tag ${JOB}:V${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}"
                 sh "docker tag ${JOB}:V${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:${COMMIT_ID}"
+                sh "docker tag ${JOB}:V${BUILD_NUMBER} ${DOCKER_USERNAME}/${JOB}:latest"
 
                 
             //   docker.withRegistry('', registryCredential) {
@@ -118,6 +119,7 @@ pipeline {
                     //sh "docker push ${DOCKER_USERNAME}/${JOB}:v${BUILD_NUMBER}"
                     sh "docker push ${DOCKER_USERNAME}/${JOB}:V${BUILD_NUMBER}"
                     sh "docker push ${DOCKER_USERNAME}/${JOB}:${COMMIT_ID}"
+                    sh "docker push ${DOCKER_USERNAME}/${JOB}:latest"
                 }
             }
         }
