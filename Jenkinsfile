@@ -135,7 +135,7 @@ pipeline {
         stage('Verify Deployment to K8s') {
           steps {
             script {
-                withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'kopsblog.com.ng', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', serverUrl: ' https://api.kopsblog.com.ng']]) {
+                withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'kopsblog.com.ng', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', serverUrl: 'https://api.kopsblog.com.ng']]) {
                     sh "kubectl get pods -n webapps"
                     sh "kubectl get svc -n webapps"
                 }
